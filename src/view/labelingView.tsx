@@ -7,26 +7,73 @@ import karina from '../karina.jpg';
 import winter from '../winter.jpg';
 import ningning from '../ningning.jpg';
 import giselle from '../giselle.jpg';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import {
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
+  ListSubheader,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material';
 import { EditMode } from '../constants';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   editModeSelector,
   setCurrentImgSrc,
   setEditMode,
-} from './labelingSlice';
+} from '../slice/labelingSlice';
 
 export default function LabelingView(): React.ReactElement {
   return (
     <div className={styles.labelingView}>
-      <ImageList />
+      <PreviewList srcList={[karina, winter, giselle, ningning]} />
+      {/* <PreviewList
+        srcList={[
+          karina,
+          winter,
+          giselle,
+          ningning,
+          karina,
+          winter,
+          giselle,
+          ningning,
+          karina,
+          winter,
+          giselle,
+          ningning,
+        ]}
+      /> */}
       <Workbench currentImgSrc={karina} />
     </div>
   );
 }
 
-function ImageList(): React.ReactElement {
-  return <div className={styles.imageList}></div>;
+function PreviewList(props: { srcList: Array<string> }): React.ReactElement {
+  return (
+    <div className={styles.imageList}>
+      {props.srcList.length > 0 ? (
+        <ImageList cols={1} gap={16} sx={{ overflow: 'hidden' }}>
+          {/* <ImageListItem key="Subheader" cols={2}>
+            <ListSubheader component="div">Previews</ListSubheader>
+          </ImageListItem> */}
+          {props.srcList.map((src: string) => {
+            const filename = src.slice(src.lastIndexOf('/') + 1, src.length);
+            return (
+              <ImageListItem
+                key={`img_${filename}`}
+                className={styles.imageListItem}
+              >
+                <img src={src} srcSet={src} alt={filename} loading="lazy" />
+                <ImageListItemBar title={filename} />
+              </ImageListItem>
+            );
+          })}
+        </ImageList>
+      ) : (
+        <div></div>
+      )}
+    </div>
+  );
 }
 
 function Workbench(props: { currentImgSrc: string }): React.ReactElement {
@@ -79,7 +126,13 @@ function Canvas(props: { currentImgSrc: string }): React.ReactElement {
 
   const [canvas, setCanvas] = React.useState<fabric.Canvas | null>(null);
 
+  const [minHeight, setMinHeight] = React.useState<number>(0);
+
+  const [minWidth, setMinWidth] = React.useState<number>(0);
+
   let startPoint: Point | null = null;
+
+  console.log('[Canvas] created');
 
   const registerMouseCallbacks = (
     canvas: fabric.Canvas | null,
@@ -130,6 +183,9 @@ function Canvas(props: { currentImgSrc: string }): React.ReactElement {
       const width: number = image.width ? image.width : 300;
       const height: number = image.height ? image.height : 150;
 
+      setMinHeight(height);
+      setMinWidth(width);
+
       canv.setWidth(width);
       canv.setHeight(height);
       canv.setBackgroundImage(image, () => {
@@ -148,7 +204,7 @@ function Canvas(props: { currentImgSrc: string }): React.ReactElement {
   }, [mode]);
 
   return (
-    <div className={styles.canvasContainer}>
+    <div className={styles.canvasContainer} style={{ minHeight, minWidth }}>
       <canvas id="canvas" />
     </div>
   );

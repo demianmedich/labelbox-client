@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import labelingReducer from '../labeling/labelingSlice';
+import labelingReducer from '../slice/labelingSlice';
 
 export default configureStore({
   reducer: {
